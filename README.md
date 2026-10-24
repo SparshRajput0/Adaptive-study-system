@@ -2,7 +2,7 @@
 
 <!-- Steps to run:-  -->
 1. run the "server.py" script 
-
+n
 <!-- What it should show:- -->
 # In terminal:
     requests by the brower and the reponse gone
