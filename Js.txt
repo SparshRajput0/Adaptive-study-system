@@ -1,0 +1,110 @@
+================================================================================
+AI-POWERED ADAPTIVE STUDY SYSTEM: 30-MINUTE SPRINT CHALLENGES
+Phase 1 Engineering Foundation: Weeks 2 to 3 Bridge
+OVERVIEW
+Weekly budget: 4 hours (Wednesday 2h + Saturday 2h)
+Sprint time limit: 30 minutes each
+Core rule: Attempt design and code first before asking for hints or solutions.
+Understand every line before committing.
+SPRINT 1: UPGRADE FASTAPI ENDPOINTS (VALIDATION & SOFT DELETES)
+Goal:
+Add duplicate checking and soft-delete semantics to app/routers/subjects.py.
+Tasks:
+Duplicate Detection:
+In POST /subjects, check if subject.name.lower() matches an existing
+subject in subjects_db. If found, raise HTTPException(status_code=400,
+detail="Subject already exists").
+Soft Deletion:
+In DELETE /subjects/{subject_id}, locate the subject and set
+"archived": True instead of removing it from the list. Return the
+updated subject, or raise HTTP 404 if not found.
+Conditional Listing:
+In GET /subjects, add a query parameter include_archived: bool = False.
+Filter results so archived subjects are hidden by default.
+Done When:
+Submitting "Physics" twice in /docs returns HTTP 400.
+Deleting ID 1 hides it from GET /subjects unless include_archived=true.
+SPRINT 2: SQLITE TABLE INITIALIZATION (STUDENT_PROFILE & SUBJECTS)
+Goal:
+Replace in-memory lists with persistent SQLite tables on disk.
+Tasks:
+Database Setup:
+Create practice_sql.py. Import sqlite3, connect to study.db, and create
+a cursor.
+Student Profile Schema:
+Create table student_profile with:
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+name: TEXT NOT NULL
+daily_available_minutes: INTEGER NOT NULL
+target_exams: TEXT
+Subjects Schema:
+Create table subjects with:
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+name: TEXT UNIQUE NOT NULL
+importance: INTEGER NOT NULL DEFAULT 3
+archived: INTEGER NOT NULL DEFAULT 0
+Save & Verify:
+Commit changes with conn.commit() and close the connection.
+Done When:
+Running "python practice_sql.py" creates study.db.
+Running "git status" confirms study.db is ignored by Git (.gitignore).
+SPRINT 3: RELATIONAL SCHEMA (CHAPTERS & TOPICS WITH FOREIGN KEYS)
+Goal:
+Model the syllabus hierarchy (Subject -> Chapter -> Topic) with foreign keys.
+Tasks:
+Chapters Schema:
+Create table chapters with:
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+name: TEXT NOT NULL
+subject_id: INTEGER NOT NULL
+archived: INTEGER DEFAULT 0
+FOREIGN KEY(subject_id) REFERENCES subjects(id)
+Topics Schema:
+Create table topics with:
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+name: TEXT NOT NULL
+chapter_id: INTEGER NOT NULL
+importance: INTEGER NOT NULL CHECK(importance BETWEEN 1 AND 5)
+archived: INTEGER DEFAULT 0
+FOREIGN KEY(chapter_id) REFERENCES chapters(id)
+Test Insertion and Query:
+Insert "Physics" into subjects.
+Use cursor.lastrowid to insert "Mechanics" into chapters.
+Insert "Laws of Motion" into topics.
+Execute a SELECT query joining the tables to verify relations.
+Done When:
+Running "python practice_sql.py" prints the joined hierarchy with zero
+constraint errors.
+SPRINT 4: CONNECT FASTAPI ROUTES TO SQLITE
+Goal:
+Refactor app/routers/subjects.py to read and write directly to study.db.
+Tasks:
+Database Connection Helper:
+Create app/database.py with a function get_db() that connects to
+study.db, sets conn.row_factory = sqlite3.Row, and returns conn.
+Persisted Insertion:
+In POST /subjects, run "INSERT INTO subjects (name, importance) VALUES (?, ?)"
+using parameterized values. Commit changes with conn.commit().
+Persisted Retrieval:
+In GET /subjects, run "SELECT * FROM subjects WHERE archived = 0 AND
+importance >= ?". Convert rows with [dict(row) for row in cursor.fetchall()].
+Done When:
+You can create subjects via /docs.
+Stopping the server (Ctrl+C), restarting uvicorn, and calling GET /subjects
+still returns your saved data.
+SQL BUILDING BLOCKS CHEAT SHEET
+Auto Primary Key:
+id INTEGER PRIMARY KEY AUTOINCREMENT
+Purpose: Automatically numbers rows monotonically.
+Foreign Key:
+FOREIGN KEY(parent_id) REFERENCES parent_table(id)
+Purpose: Enforces relational parent-child hierarchy.
+Safe Parameterized Insert:
+cursor.execute("INSERT INTO subjects (name, importance) VALUES (?, ?)", (name, imp))
+Purpose: Prevents SQL syntax errors and injection bugs.
+Dictionary Row Factory:
+conn.row_factory = sqlite3.Row
+Purpose: Allows accessing SQL rows by column name like Python dicts.
+Safe Parameterized Select:
+cursor.execute("SELECT * FROM subjects WHERE id = ?", (subject_id,))
+Purpose: Safely filters records by ID using a single-element tuple.
