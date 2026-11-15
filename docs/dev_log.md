@@ -6,3 +6,13 @@ Week 2-1
 week 2-2
 1. wrote the student, and subjects get and post request endpoints
 2. identified weakness (i.e dictonary)
+week 3-1
+1. learned about SQL and how to use it.
+.   Database, tables, rows and columns.
+.   Primary keys and uniqueness.
+.   SQL SELECT, INSERT, WHERE, ORDER BY, LIMIT.
+.   Python's sqlite3 module.
+.   Connections, cursors and commits.
+.   fetchall().
+.   Parameterized queries.
+2. Made the main student database

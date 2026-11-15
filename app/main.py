@@ -1,3 +1,4 @@
+import sqlite3
 from fastapi import FastAPI
 from pydantic import BaseModel, StrictInt, StrictStr
 
@@ -8,7 +9,21 @@ class Student(BaseModel):
     name: StrictStr
     grade: StrictInt
 
+# data base connection
+connection = sqlite3.connect("study_app.db")
+cursor = connection.cursor()
+cursor.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY, name TEXT, class INTEGER, exam_goal TEXT)")
+cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
+cursor.execute(
+    "INSERT INTO students (name, class, exam_goal)"
+    "VALUES ('sparsh', 11, 'MEXT & JEE');"
+    )
+cursor.execute("SELECT * FROM students")
+connection.commit()
 app = FastAPI()
+
+# test only
+print(cursor.fetchall())
 
 subjects_data = ["Physics", "Chemistry", "Mathematics"]
 
