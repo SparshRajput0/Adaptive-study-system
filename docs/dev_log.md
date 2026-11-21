@@ -16,3 +16,6 @@ week 3-1
 .   fetchall().
 .   Parameterized queries.
 2. Made the main student database
+week 3-2
+1. modified the main.py to store the student data in the database.
+2. learned the use of sql database and thread importance.
