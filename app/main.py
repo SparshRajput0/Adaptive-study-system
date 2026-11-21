@@ -7,56 +7,49 @@ class Subject(BaseModel):
 
 class Student(BaseModel):
     name: StrictStr
-    grade: StrictInt
+    class_: StrictInt
+    exam_goal: StrictStr
 
-# data base connection
-connection = sqlite3.connect("study_app.db")
+# DATABASE
+connection = sqlite3.connect(
+    "study_app.db",
+    check_same_thread= False
+)
 cursor = connection.cursor()
 cursor.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY, name TEXT, class INTEGER, exam_goal TEXT)")
-cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
-cursor.execute(
-    "INSERT INTO students (name, class, exam_goal)"
-    "VALUES ('sparsh', 11, 'MEXT & JEE');"
-    )
 cursor.execute("SELECT * FROM students")
+students = cursor.fetchall()
 connection.commit()
+
 app = FastAPI()
 
-# test only
-print(cursor.fetchall())
+# #SUBJECTS METHODS
+# @app.get("/subjects")
+# def get_subjects():
+#     return  {
+#         "subjects" : subjects_data
+#         }
 
-subjects_data = ["Physics", "Chemistry", "Mathematics"]
-
-students_data = []
-
-#SUBJECTS METHODS
-@app.get("/subjects")
-def get_subjects():
-    return  {
-        "subjects" : subjects_data
-        }
-
-@app.post("/subjects")
-def add_subject(subject: Subject):
-    subjects_data.append(subject.name)
-    return {
-        "subjects": subjects_data
-    }
+# @app.post("/subjects")
+# def add_subject(subject: Subject):
+#     subjects_data.append(subject.name)
+#     return {
+#         "subjects": subjects_data
+#     }
 
 #STUDENT METHODS
 @app.get("/students")
 def get_students():
+    cursor.execute("SELECT * FROM students")
+    students = cursor.fetchall()
     return{
-        "students": students_data
+        "students": students
     }
 
 @app.post("/students")
 def add_student(student: Student):
-    new_student = {
-        "name": student.name,
-        "grade": student.grade
-    }
-    students_data.append(new_student)
+    cursor.execute("INSERT INTO students (name, class, exam_goal) VALUES (?, ?, ?)", (student.name, student.class_, student.exam_goal))
+    connection.commit()
     return{
-        "students": students_data
+        "status":"updated succesfuly✅"
     }
